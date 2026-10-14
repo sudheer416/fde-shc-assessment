@@ -1,0 +1,37 @@
+services:
+  mock-api:
+    build: .
+    command: ["node", "dist/src/mock-api.js"]
+    environment:
+      MOCK_API_PORT: 4000
+      MOCK_API_TOKEN: ${MOCK_API_TOKEN:-local-dev-token}
+      MOCK_MAX_REQUESTS_PER_SECOND: ${MOCK_MAX_REQUESTS_PER_SECOND:-5}
+      MOCK_FAIL_FIRST_REQUESTS: ${MOCK_FAIL_FIRST_REQUESTS:-0}
+      MOCK_FAILURE_STATUS: ${MOCK_FAILURE_STATUS:-500}
+    ports:
+      - "4000:4000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  ingestion:
+    build: .
+    command: ["node", "dist/src/index.js"]
+    environment:
+      API_URL: http://mock-api:4000/v1/patients
+      API_TOKEN: ${MOCK_API_TOKEN:-local-dev-token}
+      INPUT_FILE: /app/data/patients.csv
+      FAILED_RECORDS_FILE: /app/output/failed_records.json
+      BATCH_SIZE: ${BATCH_SIZE:-100}
+      MAX_REQUESTS_PER_SECOND: ${MAX_REQUESTS_PER_SECOND:-5}
+      MAX_RETRIES: ${MAX_RETRIES:-5}
+      INITIAL_BACKOFF_MS: ${INITIAL_BACKOFF_MS:-500}
+      REQUEST_TIMEOUT_MS: ${REQUEST_TIMEOUT_MS:-30000}
+    volumes:
+      - ./data:/app/data:ro
+      - ./output:/app/output
+    depends_on:
+      mock-api:
+        condition: service_healthy

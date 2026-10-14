@@ -1,0 +1,29 @@
+{
+  "name": "fde-shc-patient-ingestion",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Fault-tolerant patient CSV ingestion pipeline for the SHC FDE technical assessment",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/src/index.js",
+    "dev": "tsx src/index.ts",
+    "test": "tsx --test test/*.test.ts",
+    "dev:mock": "tsx src/mock-api.ts",
+    "start:mock": "node dist/src/mock-api.js"
+  },
+  "dependencies": {
+    "csv-parse": "^5.6.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "@types/express": "^4.17.21"
+  }
+}
